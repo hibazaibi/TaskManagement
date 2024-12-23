@@ -1,0 +1,23 @@
+﻿@model TaskManagement.Models.LoginViewModel
+
+<form method="post" asp-controller="Account" asp-action="Login">
+    <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="Email" class="form-control" value="@Model.Email" required />
+    </div>
+
+    <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="Password" class="form-control" value="@Model.Password" required />
+    </div>
+
+    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div class="alert alert-danger mt-2">
+            @Model.ErrorMessage
+        </div>
+    }
+
+    <button type="submit" class="btn btn-primary">Login</button>
+</form>
+

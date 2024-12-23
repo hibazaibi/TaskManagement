@@ -1,0 +1,30 @@
+﻿@model TaskManagement.Models.Task
+
+<h1>Add Task</h1>
+<form asp-action="Create" method="post">
+    <input type="hidden" asp-for="ProjectId" />
+
+    <label for="Title">Title:</label>
+    <input asp-for="Title" id="Title" name="Title" />
+    <span asp-validation-for="Title"></span>
+
+    <label for="Description">Description:</label>
+    <textarea asp-for="Description" id="Description" name="Description"></textarea>
+    <span asp-validation-for="Description"></span>
+
+    <label for="DueDate">Due Date:</label>
+    <input type="date" asp-for="DueDate" id="DueDate" name="DueDate" />
+    <span asp-validation-for="DueDate"></span>
+
+    <label for="AssignedToId">Assign To:</label>
+    <select asp-for="AssignedToId" id="AssignedToId" name="AssignedToId" asp-items="@(new SelectList(ViewBag.Users, "Id", "Name"))">
+        <option value="">-- Select User --</option>
+    </select>
+    <span asp-validation-for="AssignedToId"></span>
+
+    <button type="submit">Add Task</button>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

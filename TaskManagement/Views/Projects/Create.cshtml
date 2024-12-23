@@ -1,0 +1,34 @@
+﻿@model TaskManagement.Models.Project
+
+<h1>Create Project</h1>
+
+<form asp-action="Create" method="post">
+    <div>
+        <label for="Name">Name:</label>
+        <input asp-for="Name" id="Name" />
+        <span asp-validation-for="Name"></span>
+    </div>
+
+    <div>
+        <label for="Description">Description:</label>
+        <textarea asp-for="Description" id="Description"></textarea>
+        <span asp-validation-for="Description"></span>
+    </div>
+
+    <button type="submit">Create</button>
+</form>
+
+<!-- Debugging: Display all ModelState errors -->
+@if (!ViewData.ModelState.IsValid)
+{
+    <h3>Debugging ModelState Errors:</h3>
+    <ul>
+        @foreach (var state in ViewData.ModelState)
+        {
+            <li>
+                <strong>@state.Key:</strong>
+                @string.Join(", ", state.Value.Errors.Select(e => e.ErrorMessage))
+            </li>
+        }
+    </ul>
+}

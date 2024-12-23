@@ -1,0 +1,23 @@
+﻿@model List<Project>
+@{
+}
+<h1 class="text-center mb-5">Projects</h1>
+<a asp-controller="Projects" asp-action="Create">Add Project</a>
+
+<table>
+    <tr>
+        <th>Name</th>
+        <th>Description</th>
+        <th>Actions</th>
+    </tr>
+    @foreach (var project in Model)
+    {
+        <tr>
+            <td>@project.Name</td>
+            <td>@project.Description</td>
+            <td>
+                <a asp-action="Index" asp-controller="Tasks" asp-route-projectId="@project.Id">View Tasks</a>
+            </td>
+        </tr>
+    }
+</table>

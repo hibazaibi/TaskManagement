@@ -1,0 +1,28 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+<h1>Tasks</h1>
+<a asp-action="Create" asp-route-projectId="@ViewBag.ProjectId">Add Task</a>
+
+<table>
+    <tr>
+        <th>Title</th>
+        <th>Description</th>
+        <th>Status</th>
+        <th>Actions</th>
+    </tr>
+    @foreach (var task in Model)
+    {
+        <tr>
+            <td>@task.Title</td>
+            <td>@task.Description</td>
+            <td>@(task.IsComplete ? "Complete" : "Incomplete")</td>
+            <td>
+                <a asp-action="ToggleComplete" asp-route-id="@task.Id">Toggle Status</a>
+            </td>
+        </tr>
+    }
+</table>
+
