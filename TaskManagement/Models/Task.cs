@@ -23,10 +23,14 @@ namespace TaskManagement.Models
 
         [Required]
         public int ProjectId { get; set; }
+
         [ForeignKey("ProjectId")]
-        public Project Project { get; set; }
+        public Project Project { get; set; } // No [Required] here
+
         [Required(ErrorMessage = "The AssignedTo field is required.")]
         public int? AssignedToId { get; set; }
-        public User AssignedTo { get; set; }
+
+        [ForeignKey("AssignedToId")]
+        public User AssignedTo { get; set; } // No [Required] here
     }
 }

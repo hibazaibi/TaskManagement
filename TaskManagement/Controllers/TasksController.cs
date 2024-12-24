@@ -38,46 +38,59 @@ namespace TaskManagement.Controllers
                 return NotFound($"Project with ID {projectId} not found.");
             }
 
+            // Fetch users and ensure we have them
             var users = context.Users.Select(u => new { u.Id, Name = u.FirstName }).ToList();
+            if (!users.Any())
+            {
+                Console.WriteLine("No users found in the database.");
+            }
+
             ViewBag.Users = users;
             ViewBag.ProjectId = projectId;
 
-            return View(new Task { ProjectId = projectId });
+            // Pass the task object to the view
+            var task = new Task { ProjectId = projectId };  // Initialiser un objet Task
+            return View(task);  // Passer l'objet task à la vue
         }
         [HttpPost]
         [Authorize(Roles = "Manager,TeamLeader")]
         public IActionResult Create(Task task)
         {
-            Console.WriteLine("Received POST request to create a task.");
-            Console.WriteLine($"Task Details: ProjectId={task.ProjectId}, Title={task.Title}, AssignedToId={task.AssignedToId}, DueDate={task.DueDate}, Description={task.Description}");
-
             if (!ModelState.IsValid)
             {
-                Console.WriteLine("ModelState is invalid. Errors:");
-                foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
+                // Log errors (optional)
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+                foreach (var error in errors)
                 {
-                    Console.WriteLine($"- {error.ErrorMessage}");
+                    Console.WriteLine($"Validation Error: {error}");
                 }
 
-                var users = context.Users.Select(u => new { u.Id, Name = u.FirstName }).ToList();
-                ViewBag.Users = users;
+                // Repopulate ViewBag.Users in case of validation error
+                ViewBag.Users = context.Users.Select(u => new { u.Id, Name = u.FirstName }).ToList();
                 return View(task);
             }
 
             var project = context.Projects.FirstOrDefault(p => p.Id == task.ProjectId);
             if (project == null)
             {
-                Console.WriteLine($"Error: Project with ID {task.ProjectId} not found.");
-                return NotFound($"Project with ID {task.ProjectId} not found.");
+                ModelState.AddModelError("ProjectId", "The specified project does not exist.");
+                ViewBag.Users = context.Users.Select(u => new { u.Id, Name = u.FirstName }).ToList();
+                return View(task);
             }
 
-            task.Project = project;
+            var assignedTo = context.Users.FirstOrDefault(u => u.Id == task.AssignedToId);
+            if (assignedTo == null)
+            {
+                ModelState.AddModelError("AssignedToId", "The specified user does not exist.");
+                ViewBag.Users = context.Users.Select(u => new { u.Id, Name = u.FirstName }).ToList();
+                return View(task);
+            }
 
+            // Save the task
             try
             {
                 context.Tasks.Add(task);
                 context.SaveChanges();
-                Console.WriteLine("Task successfully created.");
                 return RedirectToAction("Index", new { projectId = task.ProjectId });
             }
             catch (Exception ex)
@@ -87,6 +100,7 @@ namespace TaskManagement.Controllers
                 return View(task);
             }
         }
+
 
 
         public IActionResult ToggleComplete(int id)

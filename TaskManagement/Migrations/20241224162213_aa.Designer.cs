@@ -12,8 +12,8 @@ using TaskManagement.Services;
 namespace TaskManagement.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20241223113645_dd")]
-    partial class dd
+    [Migration("20241224162213_aa")]
+    partial class aa
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -64,7 +64,7 @@ namespace TaskManagement.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("AssignedToId")
+                    b.Property<int>("AssignedToId")
                         .HasColumnType("int");
 
                     b.Property<string>("Description")
@@ -147,7 +147,9 @@ namespace TaskManagement.Migrations
                 {
                     b.HasOne("TaskManagement.Models.User", "AssignedTo")
                         .WithMany("AssignedTasks")
-                        .HasForeignKey("AssignedToId");
+                        .HasForeignKey("AssignedToId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("TaskManagement.Models.Project", "Project")
                         .WithMany("Tasks")
