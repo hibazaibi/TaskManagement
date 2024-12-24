@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using TaskManagement.Models;
 using TaskManagement.Services;
 
@@ -27,7 +26,7 @@ namespace TaskManagement.Controllers
         [HttpPost]
         public IActionResult Create(User user)
         {
-         
+
             if (!ModelState.IsValid)
             {
                 foreach (var error in ModelState)
@@ -37,22 +36,22 @@ namespace TaskManagement.Controllers
                 return View(user);
             }
 
-           
+
             Console.WriteLine($"User: {user.FirstName}, {user.LastName}, {user.Email}, {user.Password}, {user.Role}");
 
             if (string.IsNullOrWhiteSpace(user.Password))
             {
-                user.Password = "Password123"; 
+                user.Password = "Password123";
             }
 
-           
+
             context.Users.Add(user);
             context.SaveChanges();
 
             return RedirectToAction("Index");
         }
 
-     
+
 
         public IActionResult Edit(int id)
         {

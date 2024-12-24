@@ -23,9 +23,7 @@ namespace TaskManagement.Models
         [Required]
         public string Role { get; set; }
         public List<Project> OwnedProjects { get; set; } = new List<Project>();
-            public List<Project> ContributedProjects { get; set; } = new List<Project>();
-            public List<Task> AssignedTasks { get; set; } = new List<Task>();
-        
-
+        public List<Project> ContributedProjects { get; set; } = new List<Project>();
+        public List<Task> AssignedTasks { get; set; } = new List<Task>();
     }
 }

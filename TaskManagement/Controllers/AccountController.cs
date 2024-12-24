@@ -1,16 +1,15 @@
-﻿using Microsoft.AspNetCore.Authentication;
-using System.Security.Claims;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using TaskManagement.Services;
 using TaskManagement.Models;
+using TaskManagement.Services;
 
 namespace TaskManagement.Controllers
 {
     public class AccountController : Controller
     {
         private readonly ApplicationDbContext context;
-public AccountController(ApplicationDbContext context)
+        public AccountController(ApplicationDbContext context)
         {
             this.context = context;
         }
@@ -18,7 +17,7 @@ public AccountController(ApplicationDbContext context)
         {
             return View(new LoginViewModel());  // Pass an empty LoginViewModel to the view
         }
-      
+
         [HttpPost]
         public async Task<IActionResult> Login(LoginViewModel model)
         {

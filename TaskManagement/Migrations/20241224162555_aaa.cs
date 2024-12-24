@@ -5,7 +5,7 @@
 namespace TaskManagement.Migrations
 {
     /// <inheritdoc />
-    public partial class UpdateProjectModel : Migration
+    public partial class aaa : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
