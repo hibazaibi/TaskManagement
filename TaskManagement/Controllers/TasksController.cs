@@ -56,16 +56,12 @@ namespace TaskManagement.Controllers
         [Authorize(Roles = "Manager,TeamLeader")]
         public IActionResult Create(Task task)
         {
+            // Explicitly set navigation properties to null
+            task.Project = null;
+            task.AssignedTo = null;
+
             if (!ModelState.IsValid)
             {
-                // Log errors (optional)
-                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
-                foreach (var error in errors)
-                {
-                    Console.WriteLine($"Validation Error: {error}");
-                }
-
-                // Repopulate ViewBag.Users in case of validation error
                 ViewBag.Users = context.Users.Select(u => new { u.Id, Name = u.FirstName }).ToList();
                 return View(task);
             }
@@ -86,7 +82,6 @@ namespace TaskManagement.Controllers
                 return View(task);
             }
 
-            // Save the task
             try
             {
                 context.Tasks.Add(task);

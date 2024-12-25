@@ -1,23 +1,34 @@
 ﻿@model TaskManagement.Models.LoginViewModel
 
-<form method="post" asp-controller="Account" asp-action="Login">
-    <div class="form-group">
-        <label for="email">Email</label>
-        <input type="email" id="email" name="Email" class="form-control" value="@Model.Email" required />
+<div class="container d-flex justify-content-center align-items-center min-vh-100">
+    <div class="card shadow-lg p-4" style="max-width: 400px; width: 100%;">
+        <h2 class="text-center mb-4">Login</h2>
+
+        <form method="post" asp-controller="Account" asp-action="Login" class="needs-validation" novalidate>
+            <!-- Email Field -->
+            <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" id="email" name="Email" class="form-control" value="@Model.Email" placeholder="Enter your email" required />
+            </div>
+
+            <!-- Password Field -->
+            <div class="mb-3">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" id="password" name="Password" class="form-control" placeholder="Enter your password" required />
+            </div>
+
+            <!-- Error Message -->
+            @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+            {
+                <div class="alert alert-danger mt-2">
+                    @Model.ErrorMessage
+                </div>
+            }
+
+            <!-- Submit Button -->
+            <div class="d-grid">
+                <button type="submit" class="btn btn-primary">Login</button>
+            </div>
+        </form>
     </div>
-
-    <div class="form-group">
-        <label for="password">Password</label>
-        <input type="password" id="password" name="Password" class="form-control" value="@Model.Password" required />
-    </div>
-
-    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
-    {
-        <div class="alert alert-danger mt-2">
-            @Model.ErrorMessage
-        </div>
-    }
-
-    <button type="submit" class="btn btn-primary">Login</button>
-</form>
-
+</div>

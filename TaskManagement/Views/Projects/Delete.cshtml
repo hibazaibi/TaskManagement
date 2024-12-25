@@ -1,0 +1,18 @@
+﻿@model TaskManagement.Models.Project
+
+<h1>Delete Project</h1>
+<h3>Are you sure you want to delete this project?</h3>
+
+<div>
+    <strong>Name:</strong> @Model.Name
+</div>
+<div>
+    <strong>Description:</strong> @Model.Description
+</div>
+
+<form method="post" asp-action="DeleteConfirmed">
+    <input type="hidden" asp-for="Id" />
+    <button type="submit" class="btn btn-danger">Delete</button>
+    <a href="@Url.Action("Index")" class="btn btn-secondary">Cancel</a>
+</form>
+

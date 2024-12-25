@@ -1,23 +1,37 @@
 ﻿@model List<Project>
 @{
 }
-<h1 class="text-center mb-5">Projects</h1>
-<a asp-controller="Projects" asp-action="Create">Add Project</a>
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
 
-<table>
-    <tr>
-        <th>Name</th>
-        <th>Description</th>
-        <th>Actions</th>
-    </tr>
-    @foreach (var project in Model)
-    {
+<h1 class="text-center mb-5">Projects</h1>
+<div class="d-flex justify-content-between mb-3">
+    <h2>All Projects</h2>
+    <a class="btn btn-primary" asp-controller="Projects" asp-action="Create">Add Project</a>
+</div>
+
+<table class="table table-striped table-bordered">
+    <thead class="table-dark">
         <tr>
-            <td>@project.Name</td>
-            <td>@project.Description</td>
-            <td>
-                <a asp-action="Index" asp-controller="Tasks" asp-route-projectId="@project.Id">View Tasks</a>
-            </td>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Actions</th>
         </tr>
-    }
+    </thead>
+    <tbody>
+        @foreach (var project in Model)
+        {
+            <tr>
+                <td>@project.Name</td>
+                <td>@project.Description</td>
+                <td>
+                    <a class="btn btn-info btn-sm" asp-action="Index" asp-controller="Tasks" asp-route-projectId="@project.Id">View Tasks</a>
+                    <a asp-action="Edit" asp-route-id="@project.Id" class="btn btn-warning">Edit</a>
+                    <a asp-action="Delete" asp-route-id="@project.Id" class="btn btn-danger">Delete</a>
+                </td>
+              
+            </tr>
+        }
+    </tbody>
 </table>
