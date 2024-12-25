@@ -2,7 +2,13 @@
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="container py-5">
+    <div class="text-center">
+        <h1 class="display-3 fw-bold mb-4">Welcome to TaskManagement</h1>
+        <p class="lead mb-4">
+            Discover how to streamline your tasks and projects effortlessly.
+      
+       </p>
+        <a href="@Url.Action("Index", "Projects")" class="btn btn-primary btn-lg me-2">View Projects</a>
+    </div>
 </div>

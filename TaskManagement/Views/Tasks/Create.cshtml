@@ -1,38 +1,43 @@
 ﻿@model TaskManagement.Models.Task
-
-<h1>Add Task</h1>
-
-<form asp-action="Create">
-    <input type="hidden" asp-for="ProjectId" />
-
-    <div>
-        <label asp-for="Title"></label>
-        <input asp-for="Title" />
-        <span asp-validation-for="Title" class="text-danger"></span>
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        Add Task
     </div>
+    <div class="card-body">
+        <form asp-action="Create">
+            <input type="hidden" asp-for="ProjectId" />
 
-    <div>
-        <label asp-for="Description"></label>
-        <textarea asp-for="Description"></textarea>
-        <span asp-validation-for="Description" class="text-danger"></span>
+            <div class="mb-3">
+                <label asp-for="Title" class="form-label"></label>
+                <input asp-for="Title" class="form-control" />
+                <span asp-validation-for="Title" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Description" class="form-label"></label>
+                <textarea asp-for="Description" class="form-control"></textarea>
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="DueDate" class="form-label"></label>
+                <input asp-for="DueDate" type="date" class="form-control" />
+                <span asp-validation-for="DueDate" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="AssignedToId" class="form-label"></label>
+                <select asp-for="AssignedToId" class="form-select" asp-items="@(new SelectList(ViewBag.Users, "Id", "Name", Model.AssignedToId))">
+                    <option value="">-- Select User --</option>
+                </select>
+                <span asp-validation-for="AssignedToId" class="text-danger"></span>
+            </div>
+
+            <button type="submit" class="btn btn-success">Create Task</button>
+        </form>
     </div>
+</div>
 
-    <div>
-        <label asp-for="DueDate"></label>
-        <input asp-for="DueDate" type="date" />
-        <span asp-validation-for="DueDate" class="text-danger"></span>
-    </div>
-
-    <div>
-        <label asp-for="AssignedToId"></label>
-        <select asp-for="AssignedToId" asp-items="@(new SelectList(ViewBag.Users, "Id", "Name", Model.AssignedToId))">
-            <option value="">-- Select User --</option>
-        </select>
-        <span asp-validation-for="AssignedToId" class="text-danger"></span>
-    </div>
-
-    <button type="submit">Create Task</button>
-</form>
 @if (!ViewData.ModelState.IsValid)
 {
     <ul>

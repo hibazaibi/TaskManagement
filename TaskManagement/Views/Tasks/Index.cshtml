@@ -3,26 +3,40 @@
 *@
 @{
 }
-<h1>Tasks</h1>
-<a asp-action="Create" asp-route-projectId="@ViewBag.ProjectId">Add Task</a>
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
 
-<table>
-    <tr>
-        <th>Title</th>
-        <th>Description</th>
-        <th>Status</th>
-        <th>Actions</th>
-    </tr>
-    @foreach (var task in Model)
-    {
+<h1 class="text-center mb-5">Tasks</h1>
+<div class="d-flex justify-content-between mb-3">
+    <h2>Project Tasks</h2>
+    <a class="btn btn-primary" asp-action="Create" asp-route-projectId="@ViewBag.ProjectId">Add Task</a>
+</div>
+
+<table class="table table-striped table-bordered">
+    <thead class="table-dark">
         <tr>
-            <td>@task.Title</td>
-            <td>@task.Description</td>
-            <td>@(task.IsComplete ? "Complete" : "Incomplete")</td>
-            <td>
-                <a asp-action="ToggleComplete" asp-route-id="@task.Id">Toggle Status</a>
-            </td>
+            <th>Title</th>
+            <th>Description</th>
+            <th>Status</th>
+            <th>Actions</th>
         </tr>
-    }
+    </thead>
+    <tbody>
+        @foreach (var task in Model)
+        {
+            <tr>
+                <td>@task.Title</td>
+                <td>@task.Description</td>
+                <td>
+                    <span class="badge @((task.IsComplete ? "bg-success" : "bg-warning"))">
+                        @(task.IsComplete ? "Complete" : "Incomplete")
+                    </span>
+                </td>
+                <td>
+                    <a class="btn btn-secondary btn-sm" asp-action="ToggleComplete" asp-route-id="@task.Id">Toggle Status</a>
+                </td>
+            </tr>
+        }
+    </tbody>
 </table>
-

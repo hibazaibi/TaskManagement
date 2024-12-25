@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace TaskManagement.Models
 {
@@ -25,12 +26,14 @@ namespace TaskManagement.Models
         public int ProjectId { get; set; }
 
         [ForeignKey("ProjectId")]
+        [ValidateNever]
         public Project Project { get; set; } // No [Required] here
 
         [Required(ErrorMessage = "The AssignedTo field is required.")]
         public int? AssignedToId { get; set; }
 
         [ForeignKey("AssignedToId")]
+        [ValidateNever]
         public User AssignedTo { get; set; } // No [Required] here
     }
 }
