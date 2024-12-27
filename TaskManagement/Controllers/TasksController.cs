@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TaskManagement.Services;
 using Task = TaskManagement.Models.Task;
-
+using Microsoft.AspNetCore.Mvc.Rendering;
 namespace TaskManagement.Controllers
 {
     [Authorize]
@@ -20,6 +20,7 @@ namespace TaskManagement.Controllers
         {
             var project = context.Projects
                 .Include(p => p.Tasks)
+                        .ThenInclude(t => t.AssignedTo) // Include assigned user
                 .FirstOrDefault(p => p.Id == projectId);
 
             if (project == null)
@@ -28,10 +29,17 @@ namespace TaskManagement.Controllers
             }
 
             ViewBag.ProjectId = projectId;
+            ViewBag.TotalTasks = project.Tasks.Count();
+            ViewBag.CompletedTasks = project.Tasks.Count(t => t.IsComplete);
+            var tasks = project.Tasks.OrderBy(t => t.Priority).ToList();
+            ViewBag.HighPriorityTasks = project.Tasks.Count(t => t.Priority == "High");
+            ViewBag.MediumPriorityTasks = project.Tasks.Count(t => t.Priority == "Medium");
+            ViewBag.LowPriorityTasks = project.Tasks.Count(t => t.Priority == "Low");
             return View(project.Tasks);
         }
         public IActionResult Create(int projectId)
         {
+            var priorities = new List<string> { "Low", "Medium", "High" };
             var project = context.Projects.FirstOrDefault(p => p.Id == projectId);
             if (project == null)
             {
@@ -47,7 +55,7 @@ namespace TaskManagement.Controllers
 
             ViewBag.Users = users;
             ViewBag.ProjectId = projectId;
-
+            ViewBag.Priorities = new SelectList(priorities);
             // Pass the task object to the view
             var task = new Task { ProjectId = projectId };  // Initialiser un objet Task
             return View(task);  // Passer l'objet task à la vue
@@ -95,7 +103,69 @@ namespace TaskManagement.Controllers
                 return View(task);
             }
         }
+        [HttpGet]
+        public IActionResult Edit(int id, int projectId)
+        {
+            var task = context.Tasks.FirstOrDefault(t => t.Id == id);
+            if (task == null)
+            {
+                return NotFound($"Task with ID {id} not found.");
+            }
 
+            ViewBag.ProjectId = projectId;
+            ViewBag.Users = context.Users
+                .Select(u => new { u.Id, Name = u.FirstName })
+                .ToList();
+            ViewBag.Priorities = new SelectList(new List<string> { "Low", "Medium", "High" }, task.Priority);  // Default selected priority
+            return View(task);
+        }
+
+        // Edit a task (POST)
+        [HttpPost]
+        public IActionResult Edit(Task task)
+        {
+            if (!ModelState.IsValid)
+            {
+                ViewBag.Users = context.Users
+                    .Select(u => new { u.Id, Name = u.FirstName })
+                    .ToList();
+                ViewBag.Priorities = new SelectList(new List<string> { "Low", "Medium", "High" }, task.Priority);
+                return View(task);
+            }
+
+            var existingTask = context.Tasks.FirstOrDefault(t => t.Id == task.Id);
+            if (existingTask == null)
+            {
+                return NotFound($"Task with ID {task.Id} not found.");
+            }
+
+            existingTask.Title = task.Title;
+            existingTask.Description = task.Description;
+            existingTask.DueDate = task.DueDate;
+            existingTask.IsComplete = task.IsComplete;
+            existingTask.Priority = task.Priority;
+            existingTask.AssignedToId = task.AssignedToId;
+
+            context.SaveChanges();
+            return RedirectToAction("Index", new { projectId = task.ProjectId });
+        }
+
+
+        // Supprimer une tâche
+        [HttpPost]
+        [Authorize(Roles = "Manager,TeamLeader")]
+        public IActionResult Delete(int id, int projectId)
+        {
+            var task = context.Tasks.FirstOrDefault(t => t.Id == id);
+            if (task == null)
+            {
+                return NotFound($"Task with ID {id} not found.");
+            }
+
+            context.Tasks.Remove(task);
+            context.SaveChanges();
+            return RedirectToAction("Index", new { projectId });
+        }
 
 
         public IActionResult ToggleComplete(int id)
@@ -106,10 +176,21 @@ namespace TaskManagement.Controllers
                 return NotFound($"Task with ID {id} not found.");
             }
 
+            // Check if the user is a contributor
+            var isContributor = User.IsInRole("Contributor");
+            if (!isContributor)
+            {
+                TempData["ErrorMessage"] = "You do not have permission to toggle the task status.";
+                return RedirectToAction("Index", new { projectId = task.ProjectId });
+            }
+
+            // Toggle the task completion status
             task.IsComplete = !task.IsComplete;
             context.SaveChanges();
+
             return RedirectToAction("Index", new { projectId = task.ProjectId });
         }
+
     }
 }
 

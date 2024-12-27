@@ -12,13 +12,27 @@
     <h2>Project Tasks</h2>
     <a class="btn btn-primary" asp-action="Create" asp-route-projectId="@ViewBag.ProjectId">Add Task</a>
 </div>
+<!-- Lien pour afficher le graphique -->
+<a href="javascript:void(0)" onclick="toggleChart()" class="btn btn-info">View Task Completion Chart</a>
+
+<!-- Conteneur pour afficher le graphique (initialement caché) -->
+<div id="chartContainer" style="display: none; margin-top: 20px; width: 100%; height: 400px;">
+    <canvas id="taskCompletionChart" width="400" height="400"></canvas>
+</div>
+<!-- Container for Priority Chart -->
+<a href="javascript:void(0)" onclick="togglePriorityChart()" class="btn btn-info">View Task Priority Distribution</a>
+<div id="priorityChartContainer" style="display: none; margin-top: 20px; width: 100%; height: 400px;">
+    <canvas id="taskPriorityChart" width="400" height="400"></canvas>
+</div>
 
 <table class="table table-striped table-bordered">
     <thead class="table-dark">
         <tr>
             <th>Title</th>
             <th>Description</th>
+            <th>Assigned To</th>
             <th>Status</th>
+            <th>Priority</th>
             <th>Actions</th>
         </tr>
     </thead>
@@ -28,15 +42,148 @@
             <tr>
                 <td>@task.Title</td>
                 <td>@task.Description</td>
-                <td>
+    <td>@(task.AssignedTo != null ? $"{task.AssignedTo.FirstName} {task.AssignedTo.LastName}" : "Unassigned")</td>                <td>
                     <span class="badge @((task.IsComplete ? "bg-success" : "bg-warning"))">
                         @(task.IsComplete ? "Complete" : "Incomplete")
                     </span>
                 </td>
                 <td>
+                    <span class="badge @GetPriorityClass(task.Priority)">
+                        @task.Priority
+                    </span>
+                </td>
+                <td>
                     <a class="btn btn-secondary btn-sm" asp-action="ToggleComplete" asp-route-id="@task.Id">Toggle Status</a>
+                    <a class="btn btn-warning btn-sm" asp-action="Edit" asp-route-id="@task.Id" asp-route-projectId="@ViewBag.ProjectId">Edit</a>
+                    <!-- Delete button for each task -->
+                    <form method="post" asp-action="Delete" asp-route-id="@task.Id" asp-route-projectId="@ViewBag.ProjectId" style="display:inline;">
+                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this task?')">Delete</button>
+                    </form>
                 </td>
             </tr>
         }
     </tbody>
 </table>
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["ErrorMessage"]
+    </div>
+}
+@functions {
+    private string GetPriorityClass(string priority)
+    {
+        return priority switch
+        {
+            "High" => "bg-danger", // Bootstrap 5
+            "Medium" => "bg-warning", // Bootstrap 5
+            "Low" => "bg-success", // Bootstrap 5
+            _ => "bg-secondary" // Bootstrap 5
+        };
+    }
+}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    var chartInitialized = false; // Variable to check if the chart is already initialized
+
+    // Function to toggle the chart display
+    function toggleChart() {
+        var chartContainer = document.getElementById('chartContainer');
+        // If the chart is hidden, display it
+        if (chartContainer.style.display === 'none') {
+            chartContainer.style.display = 'block';
+
+            // Initialize the chart only if it's not already initialized
+            if (!chartInitialized) {
+                var ctx = document.getElementById('taskCompletionChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'pie', // Use a pie chart
+                    data: {
+                        labels: ['Completed Tasks', 'Remaining Tasks'],
+                        datasets: [{
+                            label: 'Task Completion',
+                            data: [
+    @ViewBag.CompletedTasks,  // Data for completed tasks
+    @ViewBag.TotalTasks - @ViewBag.CompletedTasks  // Data for remaining tasks
+                            ],
+                            backgroundColor: ['#4caf50', '#f44336'], // Colors for completed and remaining tasks
+                            hoverOffset: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(tooltipItem) {
+                                        return tooltipItem.label + ': ' + tooltipItem.raw + ' tasks';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+                chartInitialized = true; // Mark the chart as initialized
+            }
+        } else {
+            chartContainer.style.display = 'none'; // Hide the chart if it's already visible
+        }
+    }
+</script>
+<script>
+    var priorityChartInitialized = false;
+
+    function togglePriorityChart() {
+        var priorityChartContainer = document.getElementById('priorityChartContainer');
+        if (priorityChartContainer.style.display === 'none') {
+            priorityChartContainer.style.display = 'block';
+
+            if (!priorityChartInitialized) {
+                var ctx = document.getElementById('taskPriorityChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar', // Use a bar chart
+                    data: {
+                        labels: ['High Priority', 'Medium Priority', 'Low Priority'],
+                        datasets: [{
+                            label: 'Task Priorities',
+                            data: [
+                                @ViewBag.HighPriorityTasks,  // High Priority
+                                @ViewBag.MediumPriorityTasks,  // Medium Priority
+                                @ViewBag.LowPriorityTasks  // Low Priority
+                            ],
+                            backgroundColor: ['#ff5252', '#ffb74d', '#4caf50'], // Colors for each priority
+                            hoverOffset: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                display: false // Hide the legend for the bar chart
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(tooltipItem) {
+                                        return tooltipItem.raw + ' tasks';
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true // Ensure the y-axis starts at 0
+                            }
+                        }
+                    }
+                });
+                priorityChartInitialized = true;
+            }
+        } else {
+            priorityChartContainer.style.display = 'none';
+        }
+    }
+</script>

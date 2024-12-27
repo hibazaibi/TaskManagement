@@ -182,9 +182,6 @@ namespace TaskManagement.Controllers
         {
             return context.Projects.Any(e => e.Id == id);
         }
-
-        // GET: Projects/Delete/5
-        // GET: Projects/Delete/5
         public IActionResult Delete(int id)
         {
             var project = context.Projects.Include(p => p.Owner).FirstOrDefault(p => p.Id == id);
@@ -203,16 +200,17 @@ namespace TaskManagement.Controllers
             // Logging the project details
             Console.WriteLine($"Deleting project: {project.Id}, Owner: {project.OwnerId}, CurrentUser: {currentUser.Id}");
 
-            // Confirming that we are passing the project correctly to the view
+            // Confirmer le projet à supprimer
             return View(project);
         }
 
-        // POST: Projects/Delete/5
+        // Supprimer le projet et ses tâches associées
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public IActionResult DeleteConfirmed(int id)
         {
-            var project = context.Projects.Include(p => p.Tasks).FirstOrDefault(p => p.Id == id); // Include related tasks
+            // Charger le projet et ses tâches associées
+            var project = context.Projects.Include(p => p.Tasks).FirstOrDefault(p => p.Id == id);
 
             if (project == null)
             {
@@ -225,37 +223,36 @@ namespace TaskManagement.Controllers
                 return Unauthorized("You do not have permission to delete this project.");
             }
 
-            // Log the project details before deletion
-            Console.WriteLine($"Project to be deleted: {project.Id}, Name: {project.Name}, OwnerId: {project.OwnerId}");
+            // Logging project details for deletion
+            Console.WriteLine($"Deleting project: {project.Id}, Name: {project.Name}, OwnerId: {project.OwnerId}");
 
-            // Delete all related tasks (if any)
-            foreach (var task in project.Tasks)
-            {
-                context.Tasks.Remove(task); // Remove associated tasks
-                Console.WriteLine($"Deleting task: {task.Id}");
-            }
-
-            // Remove the project itself
-            context.Projects.Remove(project);
-            Console.WriteLine($"Project {project.Id} marked for deletion.");
-
-            // Save the changes to the database
             try
             {
+                // Supprimer les tâches associées au projet
+                foreach (var task in project.Tasks.ToList())
+                {
+                    context.Tasks.Remove(task); // Supprime chaque tâche
+                    Console.WriteLine($"Deleting task: {task.Id}, Title: {task.Title}");
+                }
+
+                // Supprimer le projet lui-même
+                context.Projects.Remove(project);
+                Console.WriteLine($"Project {project.Id} marked for deletion.");
+
+                // Sauvegarder les modifications dans la base de données
                 context.SaveChanges();
                 Console.WriteLine("Project and related tasks deleted successfully.");
             }
             catch (Exception ex)
             {
-                // Log any errors that occur during the save
+                // Gestion des erreurs, journalisation en cas de problème
                 Console.WriteLine($"Error deleting project: {ex.Message}");
                 return StatusCode(500, "An error occurred while trying to delete the project.");
             }
 
-            // Redirect after successful deletion
+            // Rediriger après la suppression réussie
             return RedirectToAction(nameof(Index));
         }
-
     }
-    }
+}
 
