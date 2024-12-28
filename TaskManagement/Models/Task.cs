@@ -35,5 +35,8 @@ namespace TaskManagement.Models
         [ForeignKey("AssignedToId")]
         [ValidateNever]
         public User AssignedTo { get; set; } // No [Required] here
+        [Required]
+        [StringLength(10)] // Restrict to specific values like "Low", "Medium", "High"
+        public string Priority { get; set; }
     }
 }

@@ -22,8 +22,8 @@ namespace TaskManagement.Services
             modelBuilder.Entity<Task>()
                 .HasOne(t => t.AssignedTo)
                 .WithMany(u => u.AssignedTasks)
-                .HasForeignKey(t => t.AssignedToId);
-
+                .HasForeignKey(t => t.AssignedToId)
+                .OnDelete(DeleteBehavior.Restrict);
             modelBuilder.Entity<Task>()
                 .HasOne(t => t.Project)
                 .WithMany(p => p.Tasks)

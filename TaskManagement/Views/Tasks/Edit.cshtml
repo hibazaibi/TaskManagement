@@ -1,10 +1,17 @@
 ﻿@model TaskManagement.Models.Task
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1 class="text-center mb-5">Edit Task</h1>
+
 <div class="card">
     <div class="card-header bg-primary text-white">
-        Add Task
+        Edit Task
     </div>
     <div class="card-body">
-        <form asp-action="Create">
+        <form asp-action="Edit" method="post">
             <input type="hidden" asp-for="ProjectId" />
 
             <div class="mb-3">
@@ -31,7 +38,6 @@
                 </select>
                 <span asp-validation-for="Priority" class="text-danger"></span>
             </div>
-
             <div class="mb-3">
                 <label asp-for="AssignedToId" class="form-label"></label>
                 <select asp-for="AssignedToId" class="form-select" asp-items="@(new SelectList(ViewBag.Users, "Id", "Name", Model.AssignedToId))">
@@ -39,23 +45,15 @@
                 </select>
                 <span asp-validation-for="AssignedToId" class="text-danger"></span>
             </div>
+        
+            <div class="mb-3">
+                <label asp-for="IsComplete" class="form-label"></label>
+                <input asp-for="IsComplete" type="checkbox" />
+                <span asp-validation-for="IsComplete" class="text-danger"></span>
+            </div>
 
-            <button type="submit" class="btn btn-success">Create Task</button>
+            <button type="submit" class="btn btn-success">Save Changes</button>
+            <a asp-action="Index" asp-route-projectId="@ViewBag.ProjectId" class="btn btn-secondary">Cancel</a>
         </form>
     </div>
 </div>
-
-@if (!ViewData.ModelState.IsValid)
-{
-    <ul>
-        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
-        {
-            <li>@error.ErrorMessage</li>
-        }
-    </ul>
-}
-
-@section Scripts {
-    <partial name="_ValidationScriptsPartial" />
-}
-
