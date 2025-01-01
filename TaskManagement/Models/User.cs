@@ -17,7 +17,6 @@ namespace TaskManagement.Models
         [EmailAddress]
         public string Email { get; set; }
 
-        // Default value provided internally
         public string Password { get; set; } = "password123";
 
         [Required]

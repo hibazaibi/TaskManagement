@@ -40,7 +40,7 @@
             </div>
             <div class="mb-3">
                 <label asp-for="AssignedToId" class="form-label"></label>
-                <select asp-for="AssignedToId" class="form-select" asp-items="@(new SelectList(ViewBag.Users, "Id", "Name", Model.AssignedToId))">
+                <select asp-for="AssignedToId" class="form-select" asp-items="@(new SelectList(ViewBag.Users, "Id", "Name", Model.AssignedToId))" readonly>
                     <option value="">-- Select User --</option>
                 </select>
                 <span asp-validation-for="AssignedToId" class="text-danger"></span>
@@ -55,5 +55,6 @@
             <button type="submit" class="btn btn-success">Save Changes</button>
             <a asp-action="Index" asp-route-projectId="@ViewBag.ProjectId" class="btn btn-secondary">Cancel</a>
         </form>
+
     </div>
 </div>

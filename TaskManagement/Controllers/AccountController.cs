@@ -15,13 +15,12 @@ namespace TaskManagement.Controllers
         }
         public IActionResult Login()
         {
-            return View(new LoginViewModel());  // Pass an empty LoginViewModel to the view
+            return View(new LoginViewModel());  
         }
 
         [HttpPost]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
-            // Remove any existing validation error for ErrorMessage
             ModelState.Remove(nameof(LoginViewModel.ErrorMessage));
 
             if (ModelState.IsValid)

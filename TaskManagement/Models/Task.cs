@@ -27,16 +27,16 @@ namespace TaskManagement.Models
 
         [ForeignKey("ProjectId")]
         [ValidateNever]
-        public Project Project { get; set; } // No [Required] here
+        public Project Project { get; set; }
 
         [Required(ErrorMessage = "The AssignedTo field is required.")]
         public int? AssignedToId { get; set; }
 
         [ForeignKey("AssignedToId")]
         [ValidateNever]
-        public User AssignedTo { get; set; } // No [Required] here
+        public User AssignedTo { get; set; } 
         [Required]
-        [StringLength(10)] // Restrict to specific values like "Low", "Medium", "High"
+        [StringLength(10)] 
         public string Priority { get; set; }
     }
 }
