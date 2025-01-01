@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TaskManagement.Models;
@@ -6,6 +7,7 @@ using TaskManagement.Services;
 
 namespace TaskManagement.Controllers
 {
+    [Authorize]
     public class ProjectsController : Controller
     {
         private readonly ApplicationDbContext context;
@@ -16,7 +18,6 @@ namespace TaskManagement.Controllers
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            // Debugging: Check if userId is null
             if (string.IsNullOrEmpty(userId))
             {
                 Console.WriteLine("User.FindFirstValue returned null.");
@@ -25,7 +26,6 @@ namespace TaskManagement.Controllers
 
             var user = context.Users.FirstOrDefault(u => u.Id == int.Parse(userId));
 
-            // Debugging: Check if user is null
             if (user == null)
             {
                 Console.WriteLine($"No user found for Id: {userId}");
@@ -51,7 +51,8 @@ namespace TaskManagement.Controllers
 
             if (currentUser == null || (currentUser.Role != "Manager" && currentUser.Role != "TeamLeader"))
             {
-                return Unauthorized("You do not have permission to create a project.");
+                TempData["ErrorMessage"] = "You do not have permission to create a project.";
+                return RedirectToAction(nameof(Index));
             }
 
             var model = new Project();
@@ -68,13 +69,11 @@ namespace TaskManagement.Controllers
                 return Unauthorized("You do not have permission to create a project.");
             }
 
-            // Assign the current user as the Owner
             project.OwnerId = currentUser.Id;
 
             Console.WriteLine($"Creating project for User: {currentUser.Id}, Role: {currentUser.Role}");
             Console.WriteLine($"Project Details - Name: {project.Name}, OwnerId: {project.OwnerId}, Description: {project.Description}");
 
-            // Remove 'Owner' from ModelState validation
             ModelState.Remove("Owner");
 
             if (ModelState.IsValid)
@@ -84,7 +83,6 @@ namespace TaskManagement.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            // Log ModelState errors
             foreach (var error in ModelState)
             {
                 Console.WriteLine($"Key: {error.Key}, Errors: {string.Join(", ", error.Value.Errors.Select(e => e.ErrorMessage))}");
@@ -126,12 +124,10 @@ namespace TaskManagement.Controllers
                 return Unauthorized("You do not have permission to edit this project.");
             }
 
-            // Remove Owner field from model validation
             ModelState.Remove("Owner");
 
-            // Reload the project entity to prevent unnecessary modifications
             var projectToUpdate = context.Projects
-                .AsNoTracking()  // This ensures no tracking of entity changes on the initial query
+                .AsNoTracking()  
                 .FirstOrDefault(p => p.Id == id);
 
             if (projectToUpdate == null)
@@ -139,11 +135,9 @@ namespace TaskManagement.Controllers
                 return NotFound();
             }
 
-            // Only update the necessary fields
             projectToUpdate.Name = project.Name;
             projectToUpdate.Description = project.Description;
 
-            // Ensure the OwnerId is not modified
             context.Entry(projectToUpdate).Property(p => p.OwnerId).IsModified = false;
             context.Entry(projectToUpdate).Reference(p => p.Owner).IsModified = false;
 
@@ -151,7 +145,7 @@ namespace TaskManagement.Controllers
             {
                 try
                 {
-                    context.Update(projectToUpdate);  // Update only the necessary fields
+                    context.Update(projectToUpdate);
                     context.SaveChanges();
                     return RedirectToAction(nameof(Index));
                 }
@@ -168,13 +162,12 @@ namespace TaskManagement.Controllers
                 }
             }
 
-            // Log validation errors if any
             foreach (var error in ModelState)
             {
                 Console.WriteLine($"Key: {error.Key}, Errors: {string.Join(", ", error.Value.Errors.Select(e => e.ErrorMessage))}");
             }
 
-            return View(project);  // Return the view with validation errors if not valid
+            return View(project);  
         }
 
 
@@ -197,19 +190,15 @@ namespace TaskManagement.Controllers
                 return Unauthorized("You do not have permission to delete this project.");
             }
 
-            // Logging the project details
             Console.WriteLine($"Deleting project: {project.Id}, Owner: {project.OwnerId}, CurrentUser: {currentUser.Id}");
 
-            // Confirmer le projet à supprimer
             return View(project);
         }
 
-        // Supprimer le projet et ses tâches associées
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public IActionResult DeleteConfirmed(int id)
         {
-            // Charger le projet et ses tâches associées
             var project = context.Projects.Include(p => p.Tasks).FirstOrDefault(p => p.Id == id);
 
             if (project == null)
@@ -223,34 +212,28 @@ namespace TaskManagement.Controllers
                 return Unauthorized("You do not have permission to delete this project.");
             }
 
-            // Logging project details for deletion
             Console.WriteLine($"Deleting project: {project.Id}, Name: {project.Name}, OwnerId: {project.OwnerId}");
 
             try
             {
-                // Supprimer les tâches associées au projet
                 foreach (var task in project.Tasks.ToList())
                 {
-                    context.Tasks.Remove(task); // Supprime chaque tâche
+                    context.Tasks.Remove(task); 
                     Console.WriteLine($"Deleting task: {task.Id}, Title: {task.Title}");
                 }
 
-                // Supprimer le projet lui-même
                 context.Projects.Remove(project);
                 Console.WriteLine($"Project {project.Id} marked for deletion.");
 
-                // Sauvegarder les modifications dans la base de données
                 context.SaveChanges();
                 Console.WriteLine("Project and related tasks deleted successfully.");
             }
             catch (Exception ex)
             {
-                // Gestion des erreurs, journalisation en cas de problème
                 Console.WriteLine($"Error deleting project: {ex.Message}");
                 return StatusCode(500, "An error occurred while trying to delete the project.");
             }
 
-            // Rediriger après la suppression réussie
             return RedirectToAction(nameof(Index));
         }
     }

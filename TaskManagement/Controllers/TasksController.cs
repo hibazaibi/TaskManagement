@@ -20,7 +20,7 @@ namespace TaskManagement.Controllers
         {
             var project = context.Projects
                 .Include(p => p.Tasks)
-                        .ThenInclude(t => t.AssignedTo) // Include assigned user
+                        .ThenInclude(t => t.AssignedTo) 
                 .FirstOrDefault(p => p.Id == projectId);
 
             if (project == null)
@@ -46,7 +46,6 @@ namespace TaskManagement.Controllers
                 return NotFound($"Project with ID {projectId} not found.");
             }
 
-            // Fetch users and ensure we have them
             var users = context.Users.Select(u => new { u.Id, Name = u.FirstName }).ToList();
             if (!users.Any())
             {
@@ -56,15 +55,13 @@ namespace TaskManagement.Controllers
             ViewBag.Users = users;
             ViewBag.ProjectId = projectId;
             ViewBag.Priorities = new SelectList(priorities);
-            // Pass the task object to the view
-            var task = new Task { ProjectId = projectId };  // Initialiser un objet Task
-            return View(task);  // Passer l'objet task à la vue
+            var task = new Task { ProjectId = projectId };  
+            return View(task);  
         }
         [HttpPost]
         [Authorize(Roles = "Manager,TeamLeader")]
         public IActionResult Create(Task task)
         {
-            // Explicitly set navigation properties to null
             task.Project = null;
             task.AssignedTo = null;
 
@@ -106,21 +103,33 @@ namespace TaskManagement.Controllers
         [HttpGet]
         public IActionResult Edit(int id, int projectId)
         {
-            var task = context.Tasks.FirstOrDefault(t => t.Id == id);
+            var task = context.Tasks.Include(t => t.AssignedTo).FirstOrDefault(t => t.Id == id);
             if (task == null)
             {
                 return NotFound($"Task with ID {id} not found.");
+            }
+
+            var currentUserIdString = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(currentUserIdString, out var currentUserId))
+            {
+                TempData["ErrorMessage"] = "Unable to identify the current user.";
+                return RedirectToAction("Index", new { projectId });
+            }
+
+            if (task.AssignedToId != currentUserId && !User.IsInRole("TeamLeader"))
+            {
+                TempData["ErrorMessage"] = "You are not authorized to edit this task.";
+                return RedirectToAction("Index", new { projectId });
             }
 
             ViewBag.ProjectId = projectId;
             ViewBag.Users = context.Users
                 .Select(u => new { u.Id, Name = u.FirstName })
                 .ToList();
-            ViewBag.Priorities = new SelectList(new List<string> { "Low", "Medium", "High" }, task.Priority);  // Default selected priority
+            ViewBag.Priorities = new SelectList(new List<string> { "Low", "Medium", "High" }, task.Priority);
+
             return View(task);
         }
-
-        // Edit a task (POST)
         [HttpPost]
         public IActionResult Edit(Task task)
         {
@@ -139,19 +148,31 @@ namespace TaskManagement.Controllers
                 return NotFound($"Task with ID {task.Id} not found.");
             }
 
+            var currentUserIdString = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(currentUserIdString, out var currentUserId))
+            {
+                TempData["ErrorMessage"] = "Unable to identify the current user.";
+                return RedirectToAction("Index", new { projectId = task.ProjectId });
+            }
+
+            if (existingTask.AssignedToId != currentUserId && !User.IsInRole("TeamLeader"))
+            {
+                TempData["ErrorMessage"] = "You are not authorized to edit this task.";
+                return RedirectToAction("Index", new { projectId = task.ProjectId });
+            }
+
             existingTask.Title = task.Title;
             existingTask.Description = task.Description;
             existingTask.DueDate = task.DueDate;
             existingTask.IsComplete = task.IsComplete;
             existingTask.Priority = task.Priority;
-            existingTask.AssignedToId = task.AssignedToId;
 
             context.SaveChanges();
             return RedirectToAction("Index", new { projectId = task.ProjectId });
         }
 
 
-        // Supprimer une tâche
+
         [HttpPost]
         [Authorize(Roles = "Manager,TeamLeader")]
         public IActionResult Delete(int id, int projectId)
@@ -170,26 +191,34 @@ namespace TaskManagement.Controllers
 
         public IActionResult ToggleComplete(int id)
         {
-            var task = context.Tasks.Find(id);
+            var task = context.Tasks
+                .Include(t => t.AssignedTo) 
+                .FirstOrDefault(t => t.Id == id);
+
             if (task == null)
             {
                 return NotFound($"Task with ID {id} not found.");
             }
 
-            // Check if the user is a contributor
-            var isContributor = User.IsInRole("Contributor");
-            if (!isContributor)
+            var currentUserIdString = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(currentUserIdString, out var currentUserId))
             {
-                TempData["ErrorMessage"] = "You do not have permission to toggle the task status.";
+                TempData["ErrorMessage"] = "Unable to identify the current user.";
                 return RedirectToAction("Index", new { projectId = task.ProjectId });
             }
 
-            // Toggle the task completion status
+            if (task.AssignedToId != currentUserId)
+            {
+                TempData["ErrorMessage"] = "Only the assigned user can toggle the task status.";
+                return RedirectToAction("Index", new { projectId = task.ProjectId });
+            }
+
             task.IsComplete = !task.IsComplete;
             context.SaveChanges();
 
             return RedirectToAction("Index", new { projectId = task.ProjectId });
         }
+
 
     }
 }
