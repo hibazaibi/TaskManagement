@@ -86,50 +86,51 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    var chartInitialized = false; 
+var chartInitialized = false;
 
-    function toggleChart() {
-        var chartContainer = document.getElementById('chartContainer');
-        if (chartContainer.style.display === 'none') {
-            chartContainer.style.display = 'block';
+function toggleChart() {
+    var chartContainer = document.getElementById('chartContainer');
+    if (chartContainer.style.display === 'none') {
+        chartContainer.style.display = 'block';
 
-            if (!chartInitialized) {
-                var ctx = document.getElementById('taskCompletionChart').getContext('2d');
-                new Chart(ctx, {
-                    type: 'pie', 
-                    data: {
-                        labels: ['Completed Tasks', 'Remaining Tasks'],
-                        datasets: [{
-                            label: 'Task Completion',
-                            data: [
-    @ViewBag.CompletedTasks,  
-    @ViewBag.TotalTasks - @ViewBag.CompletedTasks  
-                            ],
-                            backgroundColor: ['#4caf50', '#f44336'], 
-                            hoverOffset: 4
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        plugins: {
-                            legend: {
-                                position: 'top',
-                            },
-                            tooltip: {
-                                callbacks: {
-                                    label: function(tooltipItem) {
-                                        return tooltipItem.label + ': ' + tooltipItem.raw + ' tasks';
-                                    }
+        if (!chartInitialized) {
+            var ctx = document.getElementById('taskCompletionChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['Completed Tasks', 'Remaining Tasks'],
+                    datasets: [{
+                        label: 'Task Completion',
+                        data: [
+                            @ViewBag.CompletedTasks,
+                            @ViewBag.TotalTasks - @ViewBag.CompletedTasks
+                        ],
+                        backgroundColor: ['#4caf50', '#f44336'],
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(tooltipItem) {
+                                    return tooltipItem.label + ': ' + tooltipItem.raw + ' tasks';
                                 }
                             }
                         }
                     }
-                });
-                chartInitialized = true; 
-            }
-        } else {
-            chartContainer.style.display = 'none'; 
+                }
+            });
+            chartInitialized = true;
+        }
+    } else {
+        chartContainer.style.display = 'none';
     }
+}
 </script>
 <script>
     var priorityChartInitialized = false;
